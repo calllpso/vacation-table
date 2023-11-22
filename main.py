@@ -216,7 +216,7 @@ def sortVacation(data):
 
 app = FastAPI()
 # cors
-origins = ["http://localhost:5173", "http://localhost:8001"]  # Замените этот список на разрешенные домены
+origins = ["http://localhost:5173", "http://localhost:8001", "http://127.0.0.1:8001"]  # Замените этот список на разрешенные домены
 app.add_middleware(
     CORSMiddleware,
     allow_origins=origins,
@@ -237,17 +237,16 @@ async def create_upload_file(file: UploadFile = File(...)):
         file_contents = await file.read()
         file_bytes_io = BytesIO(file_contents)
 
-        months = weeks_in_months(2024)
         data, divisions = excel_to_json(file_bytes_io)
         divisions = sortByDivision(data, divisions)
         divisions = MergedVacation(divisions)
+        year = int(data[0]["Дата с"].split('.')[2])
+        months = weeks_in_months(year)
         divisions = setWeekCells(divisions, months)
         divisions = sortVacation(divisions)
-
-        pass
+        return {"divisions": divisions, "months": months}
     except Exception as e:
-        pass
+        return str(e)
     
-    return {"divisions": divisions, "months": months}
 
 
